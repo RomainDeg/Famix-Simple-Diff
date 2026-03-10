@@ -48,20 +48,33 @@ FamixSimpleDiff >> compareModel: aFamixJavaModel to: aFamixJavaModel2 [
 { #category : 'as yet unclassified' }
 FamixSimpleDiff >> compareRelation: aFMRelationSlot from: aFamixEntity to: otherFamixEntity [
 
-	| classesToIgnore val1 val2 |
+	| classesToIgnore val1 val2 sortBlock |
 	"just skip those cases"
-	classesToIgnore := { FamixTAnnotationInstance }.
-	(classesToIgnore includes: aFMRelationSlot targetClass) ifTrue: [ ^ true ].
-	
-	val1 := aFMRelationSlot read: aFamixEntity.
-	val2 := aFMRelationSlot read: otherFamixEntity.
+	classesToIgnore := {
+		                   FamixTAnnotationInstance.
+		                   FamixTSourceAnchor.
+		                   FamixTEntityTyping }.
+	(classesToIgnore includes: aFMRelationSlot targetClass) ifTrue: [
+		^ true ].
+
+	sortBlock := [ :a :b | a fullDisplayString < b fullDisplayString ].
+
+	aFMRelationSlot isToOne
+		ifTrue: [
+				val1 := aFMRelationSlot read: aFamixEntity.
+				val2 := aFMRelationSlot read: otherFamixEntity ]
+		ifFalse: [
+				val1 := (aFMRelationSlot read: aFamixEntity) asOrderedCollection
+					        sorted: sortBlock.
+				val2 := (aFMRelationSlot read: otherFamixEntity)
+					        asOrderedCollection sorted: sortBlock ].
 
 	"Sometimes, parent relations are duplicated and are nil.
 	This guards for that..."
 	val1 == val2 ifTrue: [ ^ true ].
 
 	aFMRelationSlot isToOne
-		ifTrue: [ ^ (self pathOfEntity: val1) = (self pathOfEntity: val1) ]
+		ifTrue: [ ^ (self pathOfEntity: val1) = (self pathOfEntity: val2) ]
 		ifFalse: [ "This is a toMany Relation! and the value should be a collection"
 				val1 size = val2 size ifFalse: [ ^ false ].
 				val1 := val1
@@ -75,19 +88,22 @@ FamixSimpleDiff >> compareRelation: aFMRelationSlot from: aFamixEntity to: other
 
 { #category : 'as yet unclassified' }
 FamixSimpleDiff >> computePathOfEntity: anEntity [
-
 	"We only work for single parent entities... And we hope this is the case always.
 	If not, talk to Guille, he has a point.
 	Read about lexical definition"
+
 	self assert: anEntity containers asSet size <= 1.
+
+	1 haltIf: [ anEntity name = 'AccessibleRole' ].
 	
 	"If we have a container, we continue recursively"
 	anEntity containers asSet do: [ :c |
-		^ (self pathOfEntity: c) copyWith: ((self sortedChildren: c) indexOf: anEntity)
-	].
-	
+			"1 haltIf: [ c mooseModel ~= (self sortedChildren: c) anyOne mooseModel ]."
+			^ (self pathOfEntity: c) copyWith:
+				  ((self sortedChildren: c) indexOf: anEntity) ].
+
 	"We don't have a container, this is the root. Return the index of this entity in the root collection"
-	^ { (self entityRoots: anEntity mooseModel) indexOf: anEntity }
+	^ { ((self entityRoots: anEntity mooseModel) indexOf: anEntity) }
 ]
 
 { #category : 'as yet unclassified' }
@@ -120,11 +136,44 @@ FamixSimpleDiff >> entityAtPath: indexPath inModel: model [
 { #category : 'as yet unclassified' }
 FamixSimpleDiff >> entityRoots: aFamixJavaModel [
 
+	| uglySortBlock goodSortBlock classToReject |
+	uglySortBlock := [ :a :b |
+		                 | valA valB |
+		                 valA := String streamContents: [ :s | a printOn: s ].
+		                 valB := String streamContents: [ :s | b printOn: s ].
+		                 valA = valB
+			                 ifTrue: [
+					                 a class = FamixJavaAnnotationInstance
+						                 ifTrue: [
+								                 a annotatedEntity sourceAnchor
+									                 ifNotNil: [
+											                 b annotatedEntity sourceAnchor
+												                 ifNotNil: [
+														                 a annotatedEntity sourceAnchor startPos
+														                 <
+														                 b annotatedEntity sourceAnchor startPos ]
+												                 ifNil: [ 1 halt ] ]
+									                 ifNil: [ 1 halt ] ]
+						                 ifFalse: [ 1 halt ] ]
+			                 ifFalse: [ valA < valB ] ].
+
+	goodSortBlock := [ :a :b |
+		                 | valA valB |
+		                 valA := String streamContents: [ :s | a printOn: s ].
+		                 valB := String streamContents: [ :s | b printOn: s ].
+		                 valA < valB ].
+
+	classToReject := {
+		                 FamixJavaAnnotationInstance.
+		                 FamixJavaAnnotationInstanceAttribute.
+		                 FamixJavaWildcard }.
+
 	^ (roots ifNil: [ roots := Dictionary new ])
 		  at: aFamixJavaModel
 		  ifAbsentPut: [
-				  (aFamixJavaModel rootEntities select: [ :e | e isStub not ])
-					  sorted: [ :a :b | a fullDisplayString < b fullDisplayString ] ]
+				  (aFamixJavaModel rootEntities reject: [ :e |
+					   e isStub or: [ classToReject includes: e class ] ]) sorted:
+					  goodSortBlock ]
 ]
 
 { #category : 'as yet unclassified' }
@@ -176,8 +225,23 @@ FamixSimpleDiff >> recursiveCompareEntity: entity1 with: entity2 [
 { #category : 'as yet unclassified' }
 FamixSimpleDiff >> sortedChildren: entity [
 
-	^ childrenCache at: entity ifAbsentPut: [
-			  (entity containedEntities select: [ :e | e isStub not ]) sorted: [
-				  :a
-				  :b | a fullDisplayString < b fullDisplayString ] ]
+	| res |
+	res := childrenCache at: entity ifAbsentPut: [
+			       (entity containedEntities reject: [ :e |
+				        e isStub or: [ e name = '<Initializer>' ] ]) sorted: [ :a :b |
+					       | valA valB |
+					       valA := String streamContents: [ :s | a printOn: s ].
+					       valB := String streamContents: [ :s | b printOn: s ].
+					       valA = valB
+						       ifTrue: [
+								       a sourceAnchor
+									       ifNotNil: [
+											       b sourceAnchor
+												       ifNotNil: [ "case for two entities with identical printing string but different source anchor (several inner classes in the same parent for example)"
+													       a sourceAnchor startPos < b sourceAnchor startPos ]
+												       ifNil: [ 1 halt ] ]
+									       ifNil: [ 1 halt ] ]
+						       ifFalse: [ valA < valB ] ] ].
+
+	^ res
 ]
