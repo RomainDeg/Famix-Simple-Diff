@@ -13,21 +13,21 @@ Class {
 FamixSimpleDiff >> compareEntity: aFamixEntity to: otherFamixEntity [
 
 	| properties relations |
-	aFamixEntity class = otherFamixEntity class ifFalse: [ 1halt. ^ false ].
+	aFamixEntity class = otherFamixEntity class ifFalse: [ ^ false ].
 
 	"Comparing properties (slots with non-famix values)"
 	properties := aFamixEntity class allSlots select: [ :slot |
 		              slot class = FMProperty ].
 	properties do: [ :p |
 			(p read: aFamixEntity) = (p read: otherFamixEntity) ifFalse: [
-				1halt. ^ false ] ].
+				^ false ] ].
 
 	"Comparing relations (slots with famix values)"
 	relations := aFamixEntity class allSlots select: [ :slot |
 		             slot isFMRelationSlot ].
 	relations do: [ :r |
 			(self compareRelation: r from: aFamixEntity to: otherFamixEntity)
-				ifFalse: [ 1halt. ^ false ] ].
+				ifFalse: [ ^ false ] ].
 
 	"Every slot value is equal, the entities are identical"
 	^ true
@@ -280,8 +280,8 @@ FamixSimpleDiff >> sortedChildren: entity [
 											       b sourceAnchor
 												       ifNotNil: [ "case for two entities with identical printing string but different source anchor (several inner classes in the same parent for example)"
 													       a sourceAnchor startPos < b sourceAnchor startPos ]
-												       ifNil: [ 1 halt ] ]
-									       ifNil: [ 1 halt ] ]
+												       ifNil: [ valA < valB ] ]
+									       ifNil: [ valA < valB] ]
 						       ifFalse: [ valA < valB ] ] ].
 
 
