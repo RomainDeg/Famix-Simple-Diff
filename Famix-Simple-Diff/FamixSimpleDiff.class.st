@@ -51,16 +51,7 @@ FamixSimpleDiff >> compareModel: aFamixJavaModel to: aFamixJavaModel2 [
 { #category : 'as yet unclassified' }
 FamixSimpleDiff >> compareRelation: aFMRelationSlot from: aFamixEntity to: otherFamixEntity [
 
-	| classesToIgnore val1 val2 sortBlock |
-	"just skip those cases"
-	classesToIgnore := {
-		                   FamixTAnnotationInstance.
-		                   FamixTSourceAnchor.
-		                   FamixTEntityTyping.
-		                   FamixTConcretization }.
-	(classesToIgnore includes: aFMRelationSlot targetClass) ifTrue: [
-		^ true ].
-
+	| val1 val2 sortBlock |
 	aFMRelationSlot isToOne
 		ifTrue: [
 				val1 := aFMRelationSlot read: aFamixEntity.
@@ -75,21 +66,7 @@ FamixSimpleDiff >> compareRelation: aFMRelationSlot from: aFamixEntity to: other
 					             ifEmpty: [ self sortBlock ]
 					             ifNotEmpty: [ self sortBlockFor: val1 anyOne ].
 
-				rejectBlock := [ :e |
-					               | target |
-					               e name = 'clone' or: [
-							               e class = FamixJavaParametricInvocation or: [
-									               (e isInvocation and: [
-										                e source class = FamixJavaParametricMethod ])
-										               or: [
-												               e isAssociation
-													               ifTrue: [
-															               e target isCollection
-																               ifTrue: [ target := e target anyOne ]
-																               ifFalse: [ target := e target ] ]
-													               ifFalse: [ target := e ].
-												               target allContainers anySatisfy: [ :c |
-													               c isParametricEntity ] ] ] ] ].
+				rejectBlock := [ :e | e name = 'clone' ].
 
 				val1 := val1 reject: rejectBlock.
 				val2 := val2 reject: rejectBlock.
@@ -112,7 +89,9 @@ FamixSimpleDiff >> compareRelation: aFMRelationSlot from: aFamixEntity to: other
 					        flatCollect: [ :e | self pathesForMaybeMultiRelation: e ]
 					        as: Bag.
 
-				val1 = val2 ifFalse: [ ^ self fail ] ifTrue: [ ^ true ] ]
+				val1 = val2
+					ifFalse: [ ^ self fail ]
+					ifTrue: [ ^ true ] ]
 ]
 
 { #category : 'as yet unclassified' }
@@ -168,19 +147,13 @@ FamixSimpleDiff >> entityAtPath: indexPath inModel: model [
 { #category : 'as yet unclassified' }
 FamixSimpleDiff >> entityRoots: aFamixJavaModel [
 
-	| goodSortBlock classesToReject |
-	classesToReject := {
-		                   FamixJavaAnnotationInstance.
-		                   FamixJavaAnnotationInstanceAttribute.
-		                   FamixJavaWildcard }.
-
+	| goodSortBlock |
 	^ (roots ifNil: [ roots := Dictionary new ])
 		  at: aFamixJavaModel
 		  ifAbsentPut: [
 				  | rootEntities |
 				  rootEntities := aFamixJavaModel rootEntities reject: [ :e |
-					                  e isStub or: [
-						                  classesToReject includes: e class ] ].
+					                  e isStub ].
 				  goodSortBlock := self sortBlockFor: rootEntities anyOne.
 				  rootEntities sorted: goodSortBlock ]
 ]
