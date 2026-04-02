@@ -284,7 +284,7 @@ FamixSimpleDiff >> sortedChildren: entity [
 									       ifNotNil: [
 											       b sourceAnchor
 												       ifNotNil: [ "case for two entities with identical printing string but different source anchor (several inner classes in the same parent for example)"
-													       a sourceAnchor startPos < b sourceAnchor startPos ]
+													       a sourceAnchor endPos < b sourceAnchor endPos ]
 												       ifNil: [ valA < valB ] ]
 									       ifNil: [ valA < valB] ]
 						       ifFalse: [ valA < valB ] ] ].
