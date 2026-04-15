@@ -14,5 +14,16 @@ BaselineOfFamixSimpleDiff >> baseline: spec [
 	<baseline>
 	spec for: #common do: [
 		spec
-			package: 'Famix-Simple-Diff' ]
+			package: 'Famix-Simple-Diff' with: [
+				spec requires:
+						#( 'MooseTestResourcesJavaModels' ) ] ]
+]
+
+{ #category : 'baselines' }
+BaselineOfFamixSimpleDiff >> mooseTestResourcesJavaModels: spec [
+
+	spec
+		baseline: 'MooseTestResourcesJavaModels'
+		with: [ 
+		spec repository: 'github://RomainDeg/Moose-TestResources-JavaModels:main/src' ]
 ]
