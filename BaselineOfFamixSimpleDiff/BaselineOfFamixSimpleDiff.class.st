@@ -12,6 +12,8 @@ Class {
 BaselineOfFamixSimpleDiff >> baseline: spec [
 
 	<baseline>
+	self mooseTestResourcesJavaModels: spec.
+	
 	spec for: #common do: [
 		spec
 			package: 'Famix-Simple-Diff' with: [
