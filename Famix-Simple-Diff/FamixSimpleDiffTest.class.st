@@ -206,3 +206,31 @@ FamixSimpleDiffTest >> testSortBlockOrdersByName [
 	self assert: (block value: entity2 value: entity1).
 	self deny: (block value: entity1 value: entity2)
 ]
+
+{ #category : 'tests' }
+FamixSimpleDiffTest >> testSortedChildrenUseSourceAnchorWhenSameName [
+	| sd parent method1 method2 anchor1 anchor2 res |
+	sd := FamixSimpleDiff new.
+	
+	"init parent and child methods, must be the same for this test"
+	parent := FamixJavaClass new name: 'ParentClass'.
+	method1 := FamixJavaMethod new name: 'SameMethod'.
+	method2 := FamixJavaMethod new name: 'SameMethod'.
+	
+	"init file anchor, must be different for this test"
+	anchor1 := FamixJavaIndexedFileAnchor new endPos: 10.
+	anchor2 := FamixJavaIndexedFileAnchor new endPos: 20.
+	
+	"giving created anchors to the methods"
+	method1 sourceAnchor: anchor1.
+	method2 sourceAnchor: anchor2.
+	
+	"testing the sort"
+	parent methods: { method2 . method1}.
+	res := sd sortedChildren: parent. 
+	self assert: res first equals: method1.
+	self assert: res second equals: method2. 
+	 
+	
+	
+]
