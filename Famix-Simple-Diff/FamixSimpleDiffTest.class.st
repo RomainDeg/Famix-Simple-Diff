@@ -2,9 +2,9 @@ Class {
 	#name : 'FamixSimpleDiffTest',
 	#superclass : 'TestCase',
 	#instVars : [
-		'modelResources',
 		'mainModel1',
-		'mainModel2'
+		'mainModel2',
+		'libraryModel'
 	],
 	#category : 'Famix-Simple-Diff',
 	#package : 'Famix-Simple-Diff'
@@ -18,7 +18,8 @@ FamixSimpleDiffTest >> setUp [
 	self timeLimit: 15 seconds.
 	"Put here a common initialization logic for tests"
 	mainModel1 := TestJavaModelBuilder loadMainModel.
-	mainModel2 := TestJavaModelBuilder loadMainModel 
+	mainModel2 := TestJavaModelBuilder loadMainModel.
+	libraryModel := TestJavaModelBuilder loadLibraryModel 
 ]
 
 { #category : 'tests' }
@@ -150,6 +151,14 @@ FamixSimpleDiffTest >> testMethodsWithDifferentNamesAreNotEqual [
 	entity2 name: 'NewName'. 
 	
 	self assert: (sd compareEntity: entity1 to: entity2) equals: false
+]
+
+{ #category : 'tests' }
+FamixSimpleDiffTest >> testNotEqualModelsAreNotEqual [
+
+	| sd |
+	sd := FamixSimpleDiff new.
+	self deny: (sd compareModel: mainModel1 to: libraryModel)
 ]
 
 { #category : 'tests' }
