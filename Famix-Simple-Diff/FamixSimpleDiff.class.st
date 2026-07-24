@@ -354,7 +354,12 @@ FamixSimpleDiff >> finishRemainingAdditionOf: aStream target: anEntity [
 FamixSimpleDiff >> finishRemainingDeletionOf: aStream target: anEntity [
 
 	^ self finishRemaining: aStream diffCreation: [ :val |
-		  FSDEntityDeletion createDifference: anEntity expectedValue: val ]
+			  | diff |
+			  diff := FSDEntityDeletion
+				          createDifference: anEntity
+				          expectedValue: val.
+			  diff indexInParent: aStream position.
+			  diff ]
 ]
 
 { #category : 'initialization' }
