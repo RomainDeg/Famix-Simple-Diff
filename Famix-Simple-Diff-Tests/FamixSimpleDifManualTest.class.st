@@ -43,12 +43,12 @@ FamixSimpleDifManualTest >> testClearRemainingAdditionWhenMultipleMethodHaveToBe
 		
 	diff := sd differences.
 	
-	self assert: diff first class equals: FamixSimpleDifferenceEntityAddition.
-	self assert: diff first expectedValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff first class equals: FSDEntityAddition.
+	self assert: diff first expectedValue class equals: FSDMissingEntity.
 	self assert: diff first actualValue name equals: 'methodB'.
 	
-	self assert: diff second class equals: FamixSimpleDifferenceEntityAddition.
-	self assert: diff first expectedValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff second class equals: FSDEntityAddition.
+	self assert: diff first expectedValue class equals: FSDMissingEntity.
 	self assert: diff second actualValue name equals: 'methodC'.
 ]
 
@@ -86,13 +86,13 @@ FamixSimpleDifManualTest >> testClearRemainingSuppressionWhenMultipleMethodHaveT
 		
 	diff := sd differences.
 	
-	self assert: diff first class equals: FamixSimpleDifferenceEntityDeletion.
+	self assert: diff first class equals: FSDEntityDeletion.
 	self assert: diff first expectedValue name equals: 'methodB'.
-	self assert: diff first actualValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff first actualValue class equals: FSDMissingEntity.
 	
-	self assert: diff second class equals: FamixSimpleDifferenceEntityDeletion.
+	self assert: diff second class equals: FSDEntityDeletion.
 	self assert: diff second expectedValue name equals: 'methodC'.
-	self assert: diff second actualValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff second actualValue class equals: FSDMissingEntity.
 ]
 
 { #category : 'tests' }
@@ -111,7 +111,7 @@ FamixSimpleDifManualTest >> testCompareEntityToReturnsFalseAndRecordsDiffWhenDif
     
     diff := sd differences first.
     
-    self assert: diff class equals: FamixSimpleDifferencePropertyChanged. 
+    self assert: diff class equals: FSDPropertyChanged. 
     self assert: diff expectedValue equals: 'MyClass'.
     self assert: diff actualValue equals: 'MyOtherClass'. 
     
@@ -133,7 +133,7 @@ FamixSimpleDifManualTest >> testCompareEntityToReturnsFalseAndRecordsDiffWhenDif
 	
 	diff := sd differences first.
 	
-	self assert: diff class equals: FamixSimpleDifferenceEntityChanged.
+	self assert: diff class equals: FSDEntityChanged.
 	self assert: diff expectedValue equals: 'FamixJavaClass'.
 	self assert: diff actualValue equals: 'FamixJavaMethod'.
 	
@@ -168,8 +168,8 @@ FamixSimpleDifManualTest >> testCompareEntityToReturnsFalseWhenAMethodIsAddedBef
 		
 	diff := sd differences.
 	
-	self assert: diff first class equals: FamixSimpleDifferenceEntityAddition.
-	self assert: diff first expectedValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff first class equals: FSDEntityAddition.
+	self assert: diff first expectedValue class equals: FSDMissingEntity.
 	self assert: diff first actualValue equals: methodA.
 ]
 
@@ -205,8 +205,8 @@ FamixSimpleDifManualTest >> testCompareEntityToReturnsFalseWhenSameClassesAndAMe
 		
 	diff := sd differences first.
 	
-	self assert: diff class equals: FamixSimpleDifferenceEntityAddition.
-	self assert: diff expectedValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff class equals: FSDEntityAddition.
+	self assert: diff expectedValue class equals: FSDMissingEntity.
 	self assert: diff actualValue name equals: 'newMethod'.
 ]
 
@@ -241,9 +241,9 @@ FamixSimpleDifManualTest >> testCompareEntityToReturnsFalseWhenSameClassesAndAMe
 		
 	diff := sd differences first.
 	
-	self assert: diff class equals: FamixSimpleDifferenceEntityDeletion.
+	self assert: diff class equals: FSDEntityDeletion.
 	self assert: diff expectedValue name equals: 'deletedMethod'.
-	self assert: diff actualValue class equals: FamixSimpleDifferenceNullValue.
+	self assert: diff actualValue class equals: FSDMissingEntity.
 ]
 
 { #category : 'tests' }

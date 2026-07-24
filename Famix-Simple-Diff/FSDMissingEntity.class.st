@@ -3,26 +3,26 @@ This class implement the Null Object pattern for FamixSimpleDifference values.
  
 This class is used when a difference does not have an expected or actual value (expected value of an addition is nil for example). 
 
-We use Null Pattern to avoid useless if cases.
+We use Null Pattern to avoid useless if cases, and to represent our entities that are missing between models.
 "
 Class {
-	#name : 'FamixSimpleDifferenceNullValue',
-	#superclass : 'Object',
+	#name : 'FSDMissingEntity',
+	#superclass : 'FamixSimpleDifference',
 	#category : 'Famix-Simple-Diff',
 	#package : 'Famix-Simple-Diff'
 }
 
 { #category : 'accessing' }
-FamixSimpleDifferenceNullValue >> mooseName [
-	^ 'Nothing'
+FSDMissingEntity >> mooseName [
+	^ 'Missing Entity'
 ]
 
 { #category : 'accessing' }
-FamixSimpleDifferenceNullValue >> name [
-	^ 'Nothing'
+FSDMissingEntity >> name [
+	^ 'Missing Entity'
 ]
 
 { #category : 'printing' }
-FamixSimpleDifferenceNullValue >> printOn: aStream [
-	aStream nextPutAll: 'Nothing' 
+FSDMissingEntity >> printOn: aStream [
+	aStream nextPutAll: 'Missing Entity' 
 ]

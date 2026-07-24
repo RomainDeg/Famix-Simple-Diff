@@ -28,11 +28,12 @@ FamixSimpleDiff >> compareEntity: aFamixEntity to: otherFamixEntity [
 
 	| diff isEquals |
 	isEquals := true.
-
+	differences ifNil: [ differences := OrderedCollection new ].
+	
 	"we compare the type of the entities. If we have not the same type, we add the difference in the list"
 	aFamixEntity class = otherFamixEntity class ifFalse: [
-			diff := FamixSimpleDifference
-				        createEntityChanged: otherFamixEntity
+			diff := FSDEntityChanged
+				        createDifference: otherFamixEntity
 				        expectedValue: aFamixEntity class name
 				        actualValue: otherFamixEntity class name.
 			self addDifference: diff.
@@ -93,11 +94,12 @@ FamixSimpleDiff >> comparePrimitiveProperties: property from: aFamixEntity to: o
 	property1 = property2 ifTrue: [ ^ true ].
 
 	"We create a propety change differrences if our properties are not equals"
-	diff := FamixSimpleDifference
-		        createPropertyChanged: property name
-		        entity: otherFamixEntity
-		        expectedValue: property1
-		        actualValue: property2.
+	diff := FSDPropertyChanged
+	        createDifference: property name
+	        entity: otherFamixEntity
+	        expectedValue: property1
+	        actualValue: property2.
+	
 	self addDifference: diff.
 	^ false
 ]
@@ -175,7 +177,6 @@ FamixSimpleDiff >> compareToManyRelation: val1 actual: val2 target: anEntity [
 	"looking the streams"
 	[ stream1 atEnd or: [ stream2 atEnd ] ] whileFalse: [
 			| element1 element2 name1 name2 |
-			
 			"setup name"
 			element1 := stream1 peek.
 			element2 := stream2 peek.
@@ -184,31 +185,34 @@ FamixSimpleDiff >> compareToManyRelation: val1 actual: val2 target: anEntity [
 			name2 := element2 mooseName.
 
 			name1 = name2
-				ifTrue: ["move forward both ptr if identicals"
+				ifTrue: [ "move forward both ptr if identicals"
 						stream1 next.
 						stream2 next ]
 				ifFalse: [
 						name1 < name2
-							ifTrue: ["deletion case"
-									diff := FamixSimpleDifference
-										        createEntityDeletion: anEntity
-										        expectedValue: element1.
+							ifTrue: [ "deletion case"
+									diff := FSDEntityDeletion
+							        createDifference: anEntity
+							        expectedValue: element1.
+									
 									self addDifference: diff.
 									isEquals := false.
 									stream1 next "ptr1++" ]
-								
-							ifFalse: ["addition case"
-									diff := FamixSimpleDifference
-										        createEntityAdded: anEntity
+							ifFalse: [ "addition case"
+									diff := FSDEntityAddition
+										        createDifference: anEntity
 										        actualValue: element2.
+
 									self addDifference: diff.
 									isEquals := false.
 									stream2 next "ptr2++" ] ] ].
 
 	"cleaning end of pointers, checking if they have clean something"
 	"if they have deleted/added something, so the models are not equals"
-	(self finishRemainingDeletionOf: stream1 target: anEntity) ifTrue: [isEquals := false ].
-	(self finishRemainingAdditionOf: stream2 target: anEntity) ifTrue: [isEquals := false ].
+	(self finishRemainingDeletionOf: stream1 target: anEntity) ifTrue: [
+		isEquals := false ].
+	(self finishRemainingAdditionOf: stream2 target: anEntity) ifTrue: [
+		isEquals := false ].
 
 	^ isEquals
 ]
@@ -221,8 +225,8 @@ FamixSimpleDiff >> compareToOneRelation: val1 actual: val2 target: anEntity rela
 	areEquals := (self pathesForMaybeMultiRelation: val1)
 	             = (self pathesForMaybeMultiRelation: val2).
 	areEquals ifFalse: [
-			diff := FamixSimpleDifference
-				        createRelationChanged: aRelationDescription name
+			diff := FSDRelationChanged
+				        createDifference: aRelationDescription name
 				        entity: anEntity
 				        expectedValue: val1
 				        actualValue: val2.
@@ -262,10 +266,11 @@ FamixSimpleDiff >> debugOn [
 { #category : 'accessing' }
 FamixSimpleDiff >> differences [
 
-	^ differences
+	^ differences ifNil: [
+		  self error: ' Comparison not executed yet. Please compare two models before accessing to the differences.' ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'comparing' }
 FamixSimpleDiff >> enqueueRemainingTasksOf: entity1 and: entity2 into: worklist [
 
 	(self sortedChildren: entity1)
@@ -340,14 +345,14 @@ FamixSimpleDiff >> finishRemaining: aStream diffCreation: aDifferenceCreation [
 FamixSimpleDiff >> finishRemainingAdditionOf: aStream target: anEntity [
 
 	^ self finishRemaining: aStream diffCreation: [ :val |
-		  FamixSimpleDifference createEntityAdded: anEntity actualValue: val ]
+		  FSDEntityAddition createDifference: anEntity actualValue: val ]
 ]
 
 { #category : 'accessing' }
 FamixSimpleDiff >> finishRemainingDeletionOf: aStream target: anEntity [
 
 	^ self finishRemaining: aStream diffCreation: [ :val |
-			FamixSimpleDifference createEntityDeletion: anEntity expectedValue: val ]
+		  FSDEntityDeletion createDifference: anEntity expectedValue: val ]
 ]
 
 { #category : 'initialization' }
@@ -356,7 +361,6 @@ FamixSimpleDiff >> initialize [
 	super initialize.
 	debug := false.
 	childrenCache := LRUCache new maximumWeight: 100.
-	differences := OrderedCollection new.
 ]
 
 { #category : 'comparing' }
