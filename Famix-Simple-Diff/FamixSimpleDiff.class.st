@@ -195,6 +195,7 @@ FamixSimpleDiff >> compareToManyRelation: val1 actual: val2 target: anEntity [
 									diff := FSDEntityDeletion
 							        createDifference: anEntity
 							        expectedValue: element1.
+							        diff indexInParent: stream1 position.
 									
 									self addDifference: diff.
 									isEquals := false.
