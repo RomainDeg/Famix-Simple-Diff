@@ -12,7 +12,8 @@ Class {
 		'roots',
 		'childrenCache',
 		'debug',
-		'differences'
+		'differences',
+		'shouldCompareOppositeRelation'
 	],
 	#category : 'Famix-Simple-Diff',
 	#package : 'Famix-Simple-Diff'
@@ -361,6 +362,11 @@ FamixSimpleDiff >> initialize [
 	super initialize.
 	debug := false.
 	childrenCache := LRUCache new maximumWeight: 100.
+	
+	"By default we assume that opposite relations are ok if the main relation is ok.
+	This makes diffing faster, but less precise.
+	However, some model bugs come appear here, so check it optionally"
+	shouldCompareOppositeRelation := false
 ]
 
 { #category : 'comparing' }
@@ -468,6 +474,18 @@ FamixSimpleDiff >> processWorklist: worklist visited: visited [
 					  "update tick"
 					  timeCounter \\ 1000 = 0 ifTrue: [ timerTick value ] ].
 			  differences isEmpty ]
+]
+
+{ #category : 'accessing' }
+FamixSimpleDiff >> shouldCompareOppositeRelation [
+
+	^ shouldCompareOppositeRelation
+]
+
+{ #category : 'accessing' }
+FamixSimpleDiff >> shouldCompareOppositeRelation: anObject [
+
+	shouldCompareOppositeRelation := anObject
 ]
 
 { #category : 'comparing' }
