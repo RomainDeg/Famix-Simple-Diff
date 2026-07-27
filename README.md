@@ -1,6 +1,6 @@
 # Famix-Simple-Diff
 Simple implementation to compare two models and return whether they are identical or not.
-The tools also provide a list of differences that you can find between models.
+The tool also provides a list of differences that you can find between models.
 
 ## Baseline
 
@@ -24,8 +24,8 @@ diff compareModel: model1 to: model2.
 " Gives the differences between models"
 diff differences.
 ```
-## How does it works ?
-The tool will traverse all the entities of the model and uses the Moose meta-description and worklist algorithm to compare their types, properties and relations. All comparisons are made from the eye of the second model which is the target of the changes.
+## How does it work
+The tool will traverse all the entities of the model and use the Moose meta-description and a worklist algorithm to compare their types, properties, and relations. All comparisons are made from the perspective of the second model, which is the target of the changes.
 
 You have 5 possible differences: 
 - `FSDEntityAddition`: An entity has been added to the target model.
