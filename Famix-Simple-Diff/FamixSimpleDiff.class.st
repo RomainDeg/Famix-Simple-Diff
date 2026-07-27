@@ -193,9 +193,9 @@ FamixSimpleDiff >> compareToManyRelation: val1 actual: val2 target: anEntity [
 						name1 < name2
 							ifTrue: [ "deletion case"
 									diff := FSDEntityDeletion
-							        createDifference: anEntity
-							        expectedValue: element1.
-							        diff indexInParent: stream1 position.
+							        	createDifference: anEntity
+							        	expectedValue: element1.
+							      diff indexInParent: stream1 position.
 									
 									self addDifference: diff.
 									isEquals := false.
@@ -204,6 +204,7 @@ FamixSimpleDiff >> compareToManyRelation: val1 actual: val2 target: anEntity [
 									diff := FSDEntityAddition
 										        createDifference: anEntity
 										        actualValue: element2.
+									diff indexInParent: stream2 position.
 
 									self addDifference: diff.
 									isEquals := false.
@@ -347,7 +348,12 @@ FamixSimpleDiff >> finishRemaining: aStream diffCreation: aDifferenceCreation [
 FamixSimpleDiff >> finishRemainingAdditionOf: aStream target: anEntity [
 
 	^ self finishRemaining: aStream diffCreation: [ :val |
-		  FSDEntityAddition createDifference: anEntity actualValue: val ]
+			  | diff |
+			  diff := FSDEntityAddition
+				          createDifference: anEntity
+				          actualValue: val.
+			  diff indexInParent: aStream position.
+			  diff ]
 ]
 
 { #category : 'accessing' }
