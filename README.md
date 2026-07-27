@@ -1,5 +1,6 @@
 # Famix-Simple-Diff
 Simple implementation to compare two models and return whether they are identical or not.
+The tools also provide a list of differences that you can find between models.
 
 ## Baseline
 
@@ -18,3 +19,5 @@ diff := FamixSimpleDiff new.
 
 diff compareModel: victim to: model 
 ```
+## How does it works ?
+The tool will traverse all the entities of the model and uses the Moose meta-description to compare theirs type, relations.
